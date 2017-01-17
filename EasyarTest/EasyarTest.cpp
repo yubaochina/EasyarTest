@@ -61,8 +61,8 @@ int main()
 			"	\"images\"	:\n"
 			"	[\n"
 			"		{\n"
-			"			\"image\"	:	\"screen.png\",\n"
-			"			\"name\" : \"screen\"\n"
+			"			\"image\"	:	\"lego.jpg\",\n"
+			"			\"name\" : \"lego\"\n"
 			"    }\n"
 			"  ]\n"
 			"}";
@@ -92,11 +92,14 @@ int main()
 		cout << "Start to capture the frame failed!" << endl;
 	}
 
-//	while (1)
-//	{
+	while (1)
+	{
 
 		Frame frame = augmenter.newFrame();
 		Image image = frame.images()[0];
+		if (frame.images().size() <= 0)
+			continue;
+
 
 		int width = image.width();
 		int height = image.height();
@@ -104,7 +107,7 @@ int main()
 
 		if (augmentTarget.status() == AugmentedTarget::Status::kTargetStatusTracked)
 		{
-			cout << "Status: kTargetStatusDetected" << endl;
+			cout << "Status: kTargetStatusTracked" << endl;
 		}
 		else if(augmentTarget.status() == AugmentedTarget::Status::kTargetStatusDetected)
 		{
@@ -112,17 +115,18 @@ int main()
 		}
 		else if (augmentTarget.status() == AugmentedTarget::Status::kTargetStatusUnknown)
 		{
-			cout << "Status: kTargetStatusDetected" << endl;
+			cout << "Status: kTargetStatusUnknown" << endl;
 		}
 		else if (augmentTarget.status() == AugmentedTarget::Status::kTargetStatusUndefined)
 		{
-			cout << "Status: kTargetStatusUndefined" << endl;
+		//	cout << "Status: kTargetStatusUndefined" << endl;
 		}
 		frame.clear();
 		image.clear();
+#if 0
 		//quit 
-	//	if (_getch() == 'q') //quit
-	//	{
+		if (_getch() == 'q') //quit
+		{
 
 			if (cameraDevice.stop())
 			{
@@ -151,10 +155,11 @@ int main()
 			}
 			augmenter.clear();
 
-	//	}
+		}
+#endif
 	//	Sleep(2);
 
-//	}
+	}
 	
 	if (_getch() == 'q') //quit
 	{
