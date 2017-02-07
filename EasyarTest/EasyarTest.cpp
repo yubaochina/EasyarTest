@@ -14,6 +14,11 @@
 #include "easyar/frame.hpp"
 #include "easyar/target.hpp"
 #pragma comment(lib,"EasyAR.lib")
+//add opencv header for test
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/flann/miniflann.hpp"
+using namespace cv;
 using namespace std;
 using namespace EasyAR;
 int main()
@@ -30,10 +35,11 @@ int main()
 	//configure camera
 	
 	if (!cameraDevice.open(CameraDevice::Device::kDeviceDefault))
+	///if (!cameraDevice.open(3))
 	{
 		cout << "Open camera failed!" << endl;
 	}
-	//cameraDevice.setSize(Vec2I(1280, 720));
+	cameraDevice.setSize(Vec2I(1280, 720));
 	Vec2I frameSize = cameraDevice.size();
 	if (cameraDevice.isOpened())
 	{
@@ -48,7 +54,7 @@ int main()
 		cout << "Camera not opened" << endl;
 	}
 	cameraDevice.cameraCalibration();
-
+	cameraDevice.setHorizontalFlip(true);
 	cameraDevice.setFocusMode(CameraDevice::kFocusModeContinousauto);
 	//add image tracker 
 	if (!tracker.attachCamera(cameraDevice))
@@ -56,6 +62,16 @@ int main()
 		cout << "Add camera device to tracker failed" << endl;
 	}
 	tracker.setSimultaneousNum(1);
+#ifdef _OPENCV_DEBUG
+	//test image
+	Mat showimg = imread("lego.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	if (!showimg.data)
+	{
+		cout << "Read origin image error." << endl;
+	}
+	namedWindow("preview", WINDOW_AUTOSIZE);
+	imshow("preview", showimg);
+#endif
 	//add target image
 	std::string jstr="{\n"
 			"	\"images\"	:\n"
@@ -91,7 +107,7 @@ int main()
 	{
 		cout << "Start to capture the frame failed!" << endl;
 	}
-
+	
 	while (1)
 	{
 
@@ -104,23 +120,63 @@ int main()
 		int width = image.width();
 		int height = image.height();
 		cout << "frame image's size " << width << " * " << height << endl;
-
-		if (augmentTarget.status() == AugmentedTarget::Status::kTargetStatusTracked)
+		int strip = image.stride();
+		cout << "strip: " << strip << endl;
+		int pixelFormat = image.format();
+		switch (pixelFormat)
+		{
+		case PixelFormat::kPixelFormatRGBA8888:
+			cout << "Format: kPixelFormatRGBA8888" << endl; break;
+		case PixelFormat::kPixelFormatGray:
+			cout << "Format: kPixelFormatGray" << endl; break;
+		case PixelFormat::kPixelFormatRGB888:
+			cout << "Format: kPixelFormatRGB888" << endl; break;
+		case PixelFormat::kPixelFormatYUV_NV12:
+			cout << "Format: kPixelFormatYUV_NV12" << endl; break;
+		case PixelFormat::kPixelFormatYUV_NV21:
+			cout << "Format: kPixelFormatYUV_NV21" << endl; break;
+		case PixelFormat::kPixelFormatBGR888:	//windows
+			cout << "Format: kPixelFormatBGR888" << endl; break;
+		default:
+			cout << "Format: unknown";
+			break;
+		} 
+#if 0
+	//	cout << "image's data: " << (uchar *)image.data() << endl;
+		Mat showimg = imread("lego.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		if (!showimg.data)
+		{
+			cout << "Read origin image error." << endl;
+		}
+		namedWindow("preview", WINDOW_AUTOSIZE);
+		//Mat image_show(image.width(),image.height(),CV_8UC3);
+		//image_show.data = (uchar*)image.data();
+		//strncpy_s((uchar *)image_show.data, image.data(), sizeof(image.data()));
+		//memcpy(image_show.data, image.data(), sizeof(image.data()));
+		imshow("preview", showimg);
+#endif
+		AugmentedTarget::Status status = frame.targets()[0].status();
+		if (status == AugmentedTarget::Status::kTargetStatusTracked)
 		{
 			cout << "Status: kTargetStatusTracked" << endl;
 		}
-		else if(augmentTarget.status() == AugmentedTarget::Status::kTargetStatusDetected)
+		else if(status == AugmentedTarget::Status::kTargetStatusDetected)
 		{
 			cout << "Status: kTargetStatusDetected" << endl;
+			Matrix44F projectionMatrix = getProjectionGL(cameraDevice.cameraCalibration(), 0.2f, 500.f);
+			Matrix44F pose_mat = getPoseGL(frame.targets()[0].pose());
+
 		}
-		else if (augmentTarget.status() == AugmentedTarget::Status::kTargetStatusUnknown)
+		else if (status == AugmentedTarget::Status::kTargetStatusUnknown)
 		{
 			cout << "Status: kTargetStatusUnknown" << endl;
 		}
-		else if (augmentTarget.status() == AugmentedTarget::Status::kTargetStatusUndefined)
+		else if (status == AugmentedTarget::Status::kTargetStatusUndefined)
 		{
-		//	cout << "Status: kTargetStatusUndefined" << endl;
+			cout << "Status: kTargetStatusUndefined" << endl;
 		}
+		
+
 		frame.clear();
 		image.clear();
 #if 0
@@ -157,7 +213,7 @@ int main()
 
 		}
 #endif
-	//	Sleep(2);
+
 
 	}
 	

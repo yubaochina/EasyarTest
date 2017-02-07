@@ -9,6 +9,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		opencv|x64 = opencv|x64
+		opencv|x86 = opencv|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -17,6 +19,10 @@ Global
 		{04726BC7-350D-4ADA-94DB-7D219269768C}.Debug|x64.Build.0 = Debug|x64
 		{04726BC7-350D-4ADA-94DB-7D219269768C}.Debug|x86.ActiveCfg = Debug|Win32
 		{04726BC7-350D-4ADA-94DB-7D219269768C}.Debug|x86.Build.0 = Debug|Win32
+		{04726BC7-350D-4ADA-94DB-7D219269768C}.opencv|x64.ActiveCfg = opencv|x64
+		{04726BC7-350D-4ADA-94DB-7D219269768C}.opencv|x64.Build.0 = opencv|x64
+		{04726BC7-350D-4ADA-94DB-7D219269768C}.opencv|x86.ActiveCfg = opencv|Win32
+		{04726BC7-350D-4ADA-94DB-7D219269768C}.opencv|x86.Build.0 = opencv|Win32
 		{04726BC7-350D-4ADA-94DB-7D219269768C}.Release|x64.ActiveCfg = Release|x64
 		{04726BC7-350D-4ADA-94DB-7D219269768C}.Release|x64.Build.0 = Release|x64
 		{04726BC7-350D-4ADA-94DB-7D219269768C}.Release|x86.ActiveCfg = Release|Win32
