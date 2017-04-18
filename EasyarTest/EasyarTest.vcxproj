@@ -153,11 +153,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>D:\software\winCCPPLib\opencv\build\install\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>EasyAR.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EasyAR.lib;D:\software\winCCPPLib\opencv\build\install\x64\vc14\lib\opencv_world320d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='opencv|x64'">
