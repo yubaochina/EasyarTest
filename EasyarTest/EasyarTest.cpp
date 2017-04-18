@@ -73,10 +73,24 @@ int main()
 	namedWindow("preview", WINDOW_AUTOSIZE);
 	imshow("preview", showimg);
 #endif
-	//add target image
-	cv::Mat desktopImage = hwnd2mat();
-	cv::imwrite("desktop.jpg", desktopImage);
-	std::string jstr="{\n"
+	if (!augmenter.attachCamera(cameraDevice))
+	{
+		cout << "Attach camera to augmenter failed" << endl;
+	}
+	//augmenter.chooseAPI(EasyAR::Augmenter::API::kAugmenterAPIGL);
+	augmenter.setViewPort(Vec4I(0, 0, 1280, 720));
+
+	if (!cameraDevice.start())
+	{
+		cout << "Start to capture the frame failed!" << endl;
+	}
+	
+	while (1)
+	{
+		//add target image
+		cv::Mat desktopImage = hwnd2mat();
+		cv::imwrite("desktop.jpg", desktopImage);
+		std::string jstr = "{\n"
 			"	\"images\"	:\n"
 			"	[\n"
 			"		{\n"
@@ -85,34 +99,19 @@ int main()
 			"    }\n"
 			"  ]\n"
 			"}";
-	if (!target.load(jstr.c_str(), EasyAR::kStorageAssets | EasyAR::kStorageJson))
-	{
-		cout << "Add target image failed" << endl;
-	}
-	int id = target.id();
-	cout << "image id: " << id << endl;
-	const char* imageName = target.name();
-	cout << "image name: " << imageName << endl;
-	tracker.loadTargetBlocked(target);
-	if (!tracker.start())
-	{
-		cout << "tarcker is not starting" << endl;
-	}
-	
-	if (!augmenter.attachCamera(cameraDevice))
-	{
-		cout << "Attach camera to augmenter failed" << endl;
-	}
-	//augmenter.chooseAPI(EasyAR::Augmenter::API::kAugmenterAPIGL);
-	augmenter.setViewPort(Vec4I(0, 0, 1280, 720));
-	
-	if (!cameraDevice.start())
-	{
-		cout << "Start to capture the frame failed!" << endl;
-	}
-	
-	while (1)
-	{
+		if (!target.load(jstr.c_str(), EasyAR::kStorageAssets | EasyAR::kStorageJson))
+		{
+			cout << "Add target image failed" << endl;
+		}
+		int id = target.id();
+		cout << "image id: " << id << endl;
+		const char* imageName = target.name();
+		cout << "image name: " << imageName << endl;
+		tracker.loadTargetBlocked(target);
+		if (!tracker.start())
+		{
+			cout << "tarcker is not starting" << endl;
+		}
 
 		Frame frame = augmenter.newFrame();
 		Image image = frame.images()[0];
