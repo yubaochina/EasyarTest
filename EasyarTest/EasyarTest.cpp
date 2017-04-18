@@ -31,28 +31,28 @@ int main()
 	ImageTarget target;
 	if (!initialize("tqn0tZt8ixgPS7n5lr8roGjatFJub3eDq6qI6bpABardEeGj90imbhJPjWj43Z1HEdg3P3R5cJTqOz7gI1QVOP8s6sod3tbVA3nE8ea892745534c440516acbe2d172870eegZCHZYSkjgRcwbKSJmJguPcU0avGbUTrfA98DahMot0nkKBrVKyRuJM6BStwNSLoSXr"))
 	{
-		cout << "Initialize failed!"<<endl;
+		std::cout << "Initialize failed!"<<endl;
 	}
 	//configure camera
-	
 	//if (!cameraDevice.open(CameraDevice::Device::kDeviceDefault))
 	if (!cameraDevice.open(2))
 	{
-		cout << "Open camera failed!" << endl;
+		std::cout << "Open camera failed!" << endl;
 	}
-	cameraDevice.setSize(Vec2I(1280, 720));
+	//cameraDevice.setSize(Vec2I(1280, 720));
+	cameraDevice.setSize(Vec2I(480, 270));
 	Vec2I frameSize = cameraDevice.size();
 	if (cameraDevice.isOpened())
 	{
 		if (frameSize[0] == 0 || frameSize[1] == 0)
 		{
-			cout << "Camera error" << endl;
+			std::cout << "Camera error" << endl;
 			return -1;
 		}
-		cout << "frameSize: " << frameSize[0] << "*" << frameSize[1] << endl;
+		std::cout << "frameSize: " << frameSize[0] << "*" << frameSize[1] << endl;
 	}
 	else {
-		cout << "Camera not opened" << endl;
+		std::cout << "Camera not opened" << endl;
 	}
 	cameraDevice.cameraCalibration();
 	cameraDevice.setHorizontalFlip(true);
@@ -60,7 +60,7 @@ int main()
 	//add image tracker 
 	if (!tracker.attachCamera(cameraDevice))
 	{
-		cout << "Add camera device to tracker failed" << endl;
+		std::cout << "Add camera device to tracker failed" << endl;
 	}
 	tracker.setSimultaneousNum(1);
 #ifdef _OPENCV_DEBUG
@@ -75,72 +75,73 @@ int main()
 #endif
 	if (!augmenter.attachCamera(cameraDevice))
 	{
-		cout << "Attach camera to augmenter failed" << endl;
+		std::cout << "Attach camera to augmenter failed" << endl;
 	}
 	//augmenter.chooseAPI(EasyAR::Augmenter::API::kAugmenterAPIGL);
 	augmenter.setViewPort(Vec4I(0, 0, 1280, 720));
 
 	if (!cameraDevice.start())
 	{
-		cout << "Start to capture the frame failed!" << endl;
+		std::cout << "Start to capture the frame failed!" << endl;
 	}
-	
+	int count = 0;
 	while (1)
 	{
-		//add target image
-		cv::Mat desktopImage = hwnd2mat();
-		cv::imwrite("desktop.jpg", desktopImage);
-		std::string jstr = "{\n"
-			"	\"images\"	:\n"
-			"	[\n"
-			"		{\n"
-			"			\"image\"	:	\"desktop.jpg\",\n"
-			"			\"name\" : \"desktop\"\n"
-			"    }\n"
-			"  ]\n"
-			"}";
-		if (!target.load(jstr.c_str(), EasyAR::kStorageAssets | EasyAR::kStorageJson))
-		{
-			cout << "Add target image failed" << endl;
-		}
-		int id = target.id();
-		cout << "image id: " << id << endl;
-		const char* imageName = target.name();
-		cout << "image name: " << imageName << endl;
-		tracker.loadTargetBlocked(target);
-		if (!tracker.start())
-		{
-			cout << "tarcker is not starting" << endl;
-		}
-
+	//	if (0==count % 10  || 0==count)
+	//	{
+			//add target image
+			cv::Mat desktopImage = hwnd2mat();
+			cv::imwrite("desktop.jpg", desktopImage);
+			std::string jstr = "{\n"
+				"	\"images\"	:\n"
+				"	[\n"
+				"		{\n"
+				"			\"image\"	:	\"desktop.jpg\",\n"
+				"			\"name\" : \"desktop\"\n"
+				"    }\n"
+				"  ]\n"
+				"}";
+			if (!target.load(jstr.c_str(), EasyAR::kStorageAssets | EasyAR::kStorageJson))
+			{
+				std::cout << "Add target image failed" << endl;
+			}
+			int id = target.id();
+		//	std::cout << "image id: " << id << endl;
+			const char* imageName = target.name();
+		//	std::cout << "image name: " << imageName << endl;
+			tracker.loadTargetBlocked(target);
+			if (!tracker.start())
+			{
+				std::cout << "tarcker is not starting" << endl;
+			}
+	//	}
 		Frame frame = augmenter.newFrame();
 		Image image = frame.images()[0];
 		if (frame.images().size() <= 0)
 			continue;
 
-
 		int width = image.width();
 		int height = image.height();
-		cout << "frame image's size " << width << " * " << height << endl;
+		std::cout << "frame image's size " << width << " * " << height << endl;
 		int strip = image.stride();
-		cout << "strip: " << strip << endl;
+		std::cout << "strip: " << strip << endl;
 		int pixelFormat = image.format();
 		switch (pixelFormat)
 		{
 		case PixelFormat::kPixelFormatRGBA8888:
-			cout << "Format: kPixelFormatRGBA8888" << endl; break;
+			std::cout << "Format: kPixelFormatRGBA8888" << endl; break;
 		case PixelFormat::kPixelFormatGray:
-			cout << "Format: kPixelFormatGray" << endl; break;
+			std::cout << "Format: kPixelFormatGray" << endl; break;
 		case PixelFormat::kPixelFormatRGB888:
-			cout << "Format: kPixelFormatRGB888" << endl; break;
+			std::cout << "Format: kPixelFormatRGB888" << endl; break;
 		case PixelFormat::kPixelFormatYUV_NV12:
-			cout << "Format: kPixelFormatYUV_NV12" << endl; break;
+			std::cout << "Format: kPixelFormatYUV_NV12" << endl; break;
 		case PixelFormat::kPixelFormatYUV_NV21:
-			cout << "Format: kPixelFormatYUV_NV21" << endl; break;
+			std::cout << "Format: kPixelFormatYUV_NV21" << endl; break;
 		case PixelFormat::kPixelFormatBGR888:	//windows
-			cout << "Format: kPixelFormatBGR888" << endl; break;
+			std::cout << "Format: kPixelFormatBGR888" << endl; break;
 		default:
-			cout << "Format: unknown";
+			std::cout << "Format: unknown";
 			break;
 		} 
 #if 0
@@ -160,22 +161,22 @@ int main()
 		AugmentedTarget::Status status = frame.targets()[0].status();
 		if (status == AugmentedTarget::Status::kTargetStatusTracked)
 		{
-			cout << "Status: kTargetStatusTracked" << endl;
+			std::cout << "Status: kTargetStatusTracked" << endl;
 		}
 		else if(status == AugmentedTarget::Status::kTargetStatusDetected)
 		{
-			cout << "Status: kTargetStatusDetected" << endl;
+			std::cout << "Status: kTargetStatusDetected" << endl;
 			Matrix44F projectionMatrix = getProjectionGL(cameraDevice.cameraCalibration(), 0.2f, 500.f);
 			Matrix44F pose_mat = getPoseGL(frame.targets()[0].pose());
 
 		}
 		else if (status == AugmentedTarget::Status::kTargetStatusUnknown)
 		{
-			cout << "Status: kTargetStatusUnknown" << endl;
+			std::cout << "Status: kTargetStatusUnknown" << endl;
 		}
 		else if (status == AugmentedTarget::Status::kTargetStatusUndefined)
 		{
-			cout << "Status: kTargetStatusUndefined" << endl;
+//			std::cout << "Status: kTargetStatusUndefined" << endl;
 		}
 		
 
