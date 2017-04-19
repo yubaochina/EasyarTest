@@ -31,16 +31,15 @@ int main()
 	ImageTarget target;
 	if (!initialize("tqn0tZt8ixgPS7n5lr8roGjatFJub3eDq6qI6bpABardEeGj90imbhJPjWj43Z1HEdg3P3R5cJTqOz7gI1QVOP8s6sod3tbVA3nE8ea892745534c440516acbe2d172870eegZCHZYSkjgRcwbKSJmJguPcU0avGbUTrfA98DahMot0nkKBrVKyRuJM6BStwNSLoSXr"))
 	{
-		std::cout << "Initialize failed!"<<endl;
+		std::cout << "Initialize failed!" << endl;
 	}
-	//configure camera
-	//if (!cameraDevice.open(CameraDevice::Device::kDeviceDefault))
-	if (!cameraDevice.open(2))
+
+	if (!cameraDevice.open(1))
 	{
 		std::cout << "Open camera failed!" << endl;
 	}
-	//cameraDevice.setSize(Vec2I(1280, 720));
-	cameraDevice.setSize(Vec2I(480, 270));
+
+	cameraDevice.setSize(Vec2I(640, 480));
 	Vec2I frameSize = cameraDevice.size();
 	if (cameraDevice.isOpened())
 	{
@@ -54,7 +53,17 @@ int main()
 	else {
 		std::cout << "Camera not opened" << endl;
 	}
-	cameraDevice.cameraCalibration();
+
+	CameraCalibration calibration = cameraDevice.cameraCalibration();
+	calibration.focalLength()[0] = 6.1287779109201915e+02;
+	calibration.focalLength()[1] = 6.1287779109201915e+02;
+	calibration.principalPoint()[0] = 320;
+	calibration.principalPoint()[1] = 240;
+	calibration.distortionParameters()[0] = 1.3058699547349051e-01;
+	calibration.distortionParameters()[1] = -3.8614805620030163e-01;
+	calibration.distortionParameters()[2] = 0;
+	calibration.distortionParameters()[3] = 0;
+
 	cameraDevice.setHorizontalFlip(true);
 	cameraDevice.setFocusMode(CameraDevice::kFocusModeContinousauto);
 	//add image tracker 
@@ -63,16 +72,7 @@ int main()
 		std::cout << "Add camera device to tracker failed" << endl;
 	}
 	tracker.setSimultaneousNum(1);
-#ifdef _OPENCV_DEBUG
-	//test image
-	Mat showimg = imread("lego.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	if (!showimg.data)
-	{
-		cout << "Read origin image error." << endl;
-	}
-	namedWindow("preview", WINDOW_AUTOSIZE);
-	imshow("preview", showimg);
-#endif
+
 	if (!augmenter.attachCamera(cameraDevice))
 	{
 		std::cout << "Attach camera to augmenter failed" << endl;
@@ -84,14 +84,17 @@ int main()
 	{
 		std::cout << "Start to capture the frame failed!" << endl;
 	}
+
 	int count = 0;
 	while (1)
 	{
-	//	if (0==count % 10  || 0==count)
-	//	{
-			//add target image
+		if ((count % 10) == 0)
+		{
 			cv::Mat desktopImage = hwnd2mat();
 			cv::imwrite("desktop.jpg", desktopImage);
+			namedWindow("desktopImage", WINDOW_AUTOSIZE);
+			imshow("desktopImage", desktopImage);
+
 			std::string jstr = "{\n"
 				"	\"images\"	:\n"
 				"	[\n"
@@ -102,19 +105,18 @@ int main()
 				"  ]\n"
 				"}";
 			if (!target.load(jstr.c_str(), EasyAR::kStorageAssets | EasyAR::kStorageJson))
-			{
 				std::cout << "Add target image failed" << endl;
-			}
+
 			int id = target.id();
-		//	std::cout << "image id: " << id << endl;
 			const char* imageName = target.name();
-		//	std::cout << "image name: " << imageName << endl;
 			tracker.loadTargetBlocked(target);
 			if (!tracker.start())
 			{
 				std::cout << "tarcker is not starting" << endl;
 			}
-	//	}
+		}
+		count++;
+
 		Frame frame = augmenter.newFrame();
 		Image image = frame.images()[0];
 		if (frame.images().size() <= 0)
@@ -122,53 +124,36 @@ int main()
 
 		int width = image.width();
 		int height = image.height();
-		std::cout << "frame image's size " << width << " * " << height << endl;
+		//std::cout << "frame image's size " << width << " * " << height << endl;
 		int strip = image.stride();
-		std::cout << "strip: " << strip << endl;
+		//std::cout << "strip: " << strip << endl;
 		int pixelFormat = image.format();
-		switch (pixelFormat)
-		{
-		case PixelFormat::kPixelFormatRGBA8888:
-			std::cout << "Format: kPixelFormatRGBA8888" << endl; break;
-		case PixelFormat::kPixelFormatGray:
-			std::cout << "Format: kPixelFormatGray" << endl; break;
-		case PixelFormat::kPixelFormatRGB888:
-			std::cout << "Format: kPixelFormatRGB888" << endl; break;
-		case PixelFormat::kPixelFormatYUV_NV12:
-			std::cout << "Format: kPixelFormatYUV_NV12" << endl; break;
-		case PixelFormat::kPixelFormatYUV_NV21:
-			std::cout << "Format: kPixelFormatYUV_NV21" << endl; break;
-		case PixelFormat::kPixelFormatBGR888:	//windows
-			std::cout << "Format: kPixelFormatBGR888" << endl; break;
-		default:
-			std::cout << "Format: unknown";
-			break;
-		} 
-#if 0
-	//	cout << "image's data: " << (uchar *)image.data() << endl;
-		Mat showimg = imread("lego.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-		if (!showimg.data)
-		{
-			cout << "Read origin image error." << endl;
-		}
-		namedWindow("preview", WINDOW_AUTOSIZE);
-		//Mat image_show(image.width(),image.height(),CV_8UC3);
-		//image_show.data = (uchar*)image.data();
-		//strncpy_s((uchar *)image_show.data, image.data(), sizeof(image.data()));
-		//memcpy(image_show.data, image.data(), sizeof(image.data()));
-		imshow("preview", showimg);
-#endif
+
+		Mat cameraImage = Mat(height, width, CV_8UC3);
+		cameraImage.data = (uchar *)image.data();
+		namedWindow("cameraImage", WINDOW_AUTOSIZE);
+		imshow("cameraImage", cameraImage);
+		waitKey(10);
+
 		AugmentedTarget::Status status = frame.targets()[0].status();
 		if (status == AugmentedTarget::Status::kTargetStatusTracked)
 		{
 			std::cout << "Status: kTargetStatusTracked" << endl;
-		}
-		else if(status == AugmentedTarget::Status::kTargetStatusDetected)
-		{
-			std::cout << "Status: kTargetStatusDetected" << endl;
 			Matrix44F projectionMatrix = getProjectionGL(cameraDevice.cameraCalibration(), 0.2f, 500.f);
 			Matrix44F pose_mat = getPoseGL(frame.targets()[0].pose());
 
+			std::cout << "Pose Matrix:" << std::endl;
+			for (int row = 0; row < 4; row++)
+			{
+				for (int col = 0; col < 4; col++)
+					std::cout << pose_mat.data[row * 4 + col] << ", ";
+				std::cout << std::endl;
+			}
+			std::cout << std::endl;
+		}
+		else if (status == AugmentedTarget::Status::kTargetStatusDetected)
+		{
+			std::cout << "Status: kTargetStatusDetected" << endl;
 		}
 		else if (status == AugmentedTarget::Status::kTargetStatusUnknown)
 		{
@@ -176,17 +161,16 @@ int main()
 		}
 		else if (status == AugmentedTarget::Status::kTargetStatusUndefined)
 		{
-//			std::cout << "Status: kTargetStatusUndefined" << endl;
+			std::cout << "Status: kTargetStatusUndefined" << endl;
 		}
-		
 
 		frame.clear();
 		image.clear();
+
 #if 0
 		//quit 
 		if (_getch() == 'q') //quit
 		{
-
 			if (cameraDevice.stop())
 			{
 				cout << "Stop capture the frame!" << endl;
@@ -208,18 +192,16 @@ int main()
 				cout << "Stopped the tracker" << endl;
 			}
 			tracker.unloadTargetBlocked(target);
-			if(augmenter.detachCamera(cameraDevice))
+			if (augmenter.detachCamera(cameraDevice))
 			{
 				cout << "Deattache camera to augmenter successfully" << endl;
 			}
 			augmenter.clear();
-
-		}
+	}
 #endif
 
+}
 
-	}
-	
 	if (_getch() == 'q') //quit
 	{
 		return 0;
@@ -272,7 +254,7 @@ cv::Mat hwnd2mat()
 	StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
 	GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
 
-																									   // avoid memory leak
+																										 // avoid memory leak
 	DeleteObject(hbwindow);
 	DeleteDC(hwindowCompatibleDC);
 	ReleaseDC(GetDesktopWindow(), hwindowDC);
